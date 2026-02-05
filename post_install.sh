@@ -25,13 +25,16 @@ declare -A PACKAGE_DESCRIPTIONS=(
     ["rust"]="Rust - Systems programming language"
     ["python_uv"]="Python3 and uv - Python with fast package manager"
     ["tmux"]="Tmux - Terminal multiplexer"
+    ["tmux_config"]="Tmux Config - TPM and beautiful configuration"
     ["neovim"]="Neovim - Hyperextensible text editor"
     ["lazyvim"]="LazyVim - Neovim configuration framework"
+    ["lazyvim_tmux"]="LazyVim Tmux - Seamless tmux/nvim integration"
     ["git_config"]="Git - Version control configuration"
     ["claude"]="Claude Code - Anthropic AI coding assistant"
     ["opencode"]="OpenCode - AI coding assistant"
     ["codex"]="Codex - OpenAI coding CLI"
     ["gemini"]="Gemini CLI - Google AI coding assistant"
+    ["pi"]="Pi - AI coding agent"
 )
 
 # Installation order
@@ -45,13 +48,16 @@ PACKAGES=(
     "rust"
     "python_uv"
     "tmux"
+    "tmux_config"
     "neovim"
     "lazyvim"
+    "lazyvim_tmux"
     "git_config"
     "claude"
     "opencode"
     "codex"
     "gemini"
+    "pi"
 )
 
 # APT packages to install
@@ -393,6 +399,207 @@ check_tmux() {
     command -v tmux &> /dev/null
 }
 
+install_tmux_config() {
+    print_section "Configuring Tmux"
+
+    local tpm_dir="$HOME/.tmux/plugins/tpm"
+    local tmux_conf="$HOME/.tmux.conf"
+
+    # Install TPM (Tmux Plugin Manager)
+    if [[ ! -d "$tpm_dir" ]]; then
+        git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+        print_success "TPM installed"
+    else
+        print_skip "TPM"
+    fi
+
+    # Create tmux configuration if not exists or missing our marker
+    local config_marker="# Suuper Setup Tmux Configuration"
+    if [[ -f "$tmux_conf" ]] && grep -q "$config_marker" "$tmux_conf" 2>/dev/null; then
+        print_skip "Tmux configuration"
+        return 0
+    fi
+
+    # Backup existing config
+    if [[ -f "$tmux_conf" ]]; then
+        mv "$tmux_conf" "${tmux_conf}.backup.$(date +%s)"
+        print_info "Existing tmux.conf backed up"
+    fi
+
+    cat > "$tmux_conf" << 'TMUX_EOF'
+# Suuper Setup Tmux Configuration
+# Beautiful tmux + neovim integration
+
+# =============================================================================
+# GENERAL SETTINGS
+# =============================================================================
+
+# Enable true color support
+set -g default-terminal "tmux-256color"
+set -ag terminal-overrides ",xterm-256color:RGB"
+
+# Enable mouse support
+set -g mouse on
+
+# Start windows and panes at 1, not 0
+set -g base-index 1
+setw -g pane-base-index 1
+
+# Renumber windows when one is closed
+set -g renumber-windows on
+
+# Increase scrollback buffer size
+set -g history-limit 50000
+
+# Display tmux messages for 4 seconds
+set -g display-time 4000
+
+# Refresh status line every 5 seconds
+set -g status-interval 5
+
+# Focus events enabled for terminals that support them
+set -g focus-events on
+
+# Super useful when using grouped sessions
+setw -g aggressive-resize on
+
+# Faster escape time for vim
+set -sg escape-time 0
+
+# Enable clipboard
+set -g set-clipboard on
+
+# =============================================================================
+# KEY BINDINGS
+# =============================================================================
+
+# Remap prefix from C-b to C-a
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+
+# Reload config with prefix + r
+bind r source-file ~/.tmux.conf \; display-message "Config reloaded!"
+
+# Split panes using | and - (more intuitive)
+bind | split-window -h -c "#{pane_current_path}"
+bind - split-window -v -c "#{pane_current_path}"
+bind \\ split-window -h -c "#{pane_current_path}"
+unbind '"'
+unbind %
+
+# New window in current path
+bind c new-window -c "#{pane_current_path}"
+
+# Vim-like pane navigation (works with vim-tmux-navigator)
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# Resize panes with vim-like keys
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# Quick window switching
+bind -r p previous-window
+bind -r n next-window
+
+# Toggle synchronize panes
+bind S setw synchronize-panes
+
+# =============================================================================
+# VIM-TMUX NAVIGATOR INTEGRATION
+# =============================================================================
+
+# Smart pane switching with awareness of Vim splits
+is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+    | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
+bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
+bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
+bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
+bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l'  'select-pane -R'
+
+# Vim-tmux navigator in copy mode
+bind-key -T copy-mode-vi 'C-h' select-pane -L
+bind-key -T copy-mode-vi 'C-j' select-pane -D
+bind-key -T copy-mode-vi 'C-k' select-pane -U
+bind-key -T copy-mode-vi 'C-l' select-pane -R
+
+# Clear screen (since C-l is used for pane navigation)
+bind C-l send-keys 'C-l'
+
+# =============================================================================
+# COPY MODE (VI STYLE)
+# =============================================================================
+
+setw -g mode-keys vi
+
+# Enter copy mode with prefix + v
+bind v copy-mode
+
+# Vi-like selection and copy
+bind -T copy-mode-vi v send-keys -X begin-selection
+bind -T copy-mode-vi C-v send-keys -X rectangle-toggle
+bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+# =============================================================================
+# STATUSLINE THEME (Catppuccin-inspired)
+# =============================================================================
+
+# Pane borders
+set -g pane-border-style 'fg=#313244'
+set -g pane-active-border-style 'fg=#89b4fa'
+
+# Status bar
+set -g status-position bottom
+set -g status-justify left
+set -g status-style 'bg=#1e1e2e fg=#cdd6f4'
+
+# Left side: session name
+set -g status-left-length 40
+set -g status-left '#[bg=#89b4fa,fg=#1e1e2e,bold] #S #[bg=#1e1e2e,fg=#89b4fa]'
+
+# Right side: date and time
+set -g status-right-length 60
+set -g status-right '#[fg=#45475a]#[bg=#45475a,fg=#cdd6f4] %Y-%m-%d #[fg=#585b70]#[bg=#585b70,fg=#cdd6f4] %H:%M #[fg=#89b4fa]#[bg=#89b4fa,fg=#1e1e2e,bold] #h '
+
+# Window tabs
+setw -g window-status-format '#[fg=#1e1e2e,bg=#313244]#[fg=#cdd6f4,bg=#313244] #I:#W #[fg=#313244,bg=#1e1e2e]'
+setw -g window-status-current-format '#[fg=#1e1e2e,bg=#f9e2af]#[fg=#1e1e2e,bg=#f9e2af,bold] #I:#W #[fg=#f9e2af,bg=#1e1e2e]'
+
+# Message style
+set -g message-style 'bg=#f9e2af fg=#1e1e2e bold'
+
+# =============================================================================
+# PLUGINS (via TPM)
+# =============================================================================
+
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+
+# Plugin settings
+set -g @resurrect-capture-pane-contents 'on'
+set -g @resurrect-strategy-nvim 'session'
+set -g @continuum-restore 'on'
+
+# Initialize TPM (keep this line at the very bottom)
+run '~/.tmux/plugins/tpm/tpm'
+TMUX_EOF
+
+    print_success "Tmux configuration created"
+    print_info "Run 'tmux source ~/.tmux.conf' then 'prefix + I' to install plugins"
+}
+
+check_tmux_config() {
+    [[ -d "$HOME/.tmux/plugins/tpm" ]] && [[ -f "$HOME/.tmux.conf" ]]
+}
+
 install_neovim() {
     print_section "Installing Neovim"
 
@@ -448,6 +655,99 @@ install_lazyvim() {
 
 check_lazyvim() {
     [[ -d "$HOME/.config/nvim" ]] && [[ -f "$HOME/.config/nvim/lua/config/lazy.lua" ]]
+}
+
+install_lazyvim_tmux() {
+    print_section "Configuring LazyVim Tmux Integration"
+
+    local plugins_dir="$HOME/.config/nvim/lua/plugins"
+    local tmux_plugin="$plugins_dir/tmux.lua"
+    local options_file="$HOME/.config/nvim/lua/config/options.lua"
+
+    # Check if already configured
+    if [[ -f "$tmux_plugin" ]]; then
+        print_skip "LazyVim tmux integration"
+        return 0
+    fi
+
+    # Ensure plugins directory exists
+    mkdir -p "$plugins_dir"
+
+    # Create tmux integration plugin file
+    cat > "$tmux_plugin" << 'NVIM_TMUX_EOF'
+-- Tmux integration plugins for seamless navigation
+return {
+  -- vim-tmux-navigator: seamless navigation between tmux panes and vim splits
+  {
+    "christoomey/vim-tmux-navigator",
+    lazy = false,
+    cmd = {
+      "TmuxNavigateLeft",
+      "TmuxNavigateDown",
+      "TmuxNavigateUp",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
+    },
+    keys = {
+      { "<C-h>", "<cmd>TmuxNavigateLeft<cr>", desc = "Navigate Left (tmux-aware)" },
+      { "<C-j>", "<cmd>TmuxNavigateDown<cr>", desc = "Navigate Down (tmux-aware)" },
+      { "<C-k>", "<cmd>TmuxNavigateUp<cr>", desc = "Navigate Up (tmux-aware)" },
+      { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "Navigate Right (tmux-aware)" },
+    },
+  },
+
+  -- tmux.nvim: additional tmux utilities
+  {
+    "aserowy/tmux.nvim",
+    opts = {
+      copy_sync = {
+        enable = true,
+        sync_clipboard = true,
+        sync_registers = true,
+      },
+      navigation = {
+        enable_default_keybindings = false, -- using vim-tmux-navigator instead
+      },
+      resize = {
+        enable_default_keybindings = true,
+        resize_step_x = 5,
+        resize_step_y = 5,
+      },
+    },
+  },
+}
+NVIM_TMUX_EOF
+
+    print_success "LazyVim tmux plugin created"
+
+    # Add tmux-specific options to options.lua if not present
+    local options_marker="-- Tmux integration options"
+    if [[ -f "$options_file" ]] && ! grep -q "$options_marker" "$options_file" 2>/dev/null; then
+        cat >> "$options_file" << 'NVIM_OPTIONS_EOF'
+
+-- Tmux integration options
+-- Faster update time for better tmux integration
+vim.opt.updatetime = 100
+
+-- Enable true colors in terminal
+vim.opt.termguicolors = true
+
+-- Better experience in tmux
+if vim.env.TMUX then
+  -- Fix cursor shape in tmux
+  vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20"
+end
+NVIM_OPTIONS_EOF
+        print_success "LazyVim options updated for tmux"
+    else
+        print_skip "LazyVim options"
+    fi
+
+    print_info "Run 'nvim' to install tmux plugins"
+}
+
+check_lazyvim_tmux() {
+    [[ -f "$HOME/.config/nvim/lua/plugins/tmux.lua" ]]
 }
 
 install_git_config() {
@@ -586,6 +886,32 @@ install_gemini() {
 
 check_gemini() {
     command -v gemini &> /dev/null
+}
+
+install_pi() {
+    print_section "Installing Pi Coding Agent"
+
+    if command -v pi &> /dev/null; then
+        print_skip "Pi"
+        return 0
+    fi
+
+    # Ensure npm is available
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    if ! command -v npm &> /dev/null; then
+        print_error "npm not found. Please install Node.js first"
+        return 1
+    fi
+
+    npm install -g @mariozechner/pi-coding-agent
+
+    print_success "Pi Coding Agent installed successfully"
+}
+
+check_pi() {
+    command -v pi &> /dev/null
 }
 
 # =============================================================================
