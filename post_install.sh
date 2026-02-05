@@ -269,7 +269,7 @@ install_nvm() {
         return 0
     fi
 
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 
     # Load NVM
     export NVM_DIR="$HOME/.nvm"
@@ -283,29 +283,29 @@ check_nvm() {
 }
 
 install_nodejs() {
-    print_section "Installing Node.js 22"
+    print_section "Installing Node.js 24"
 
     # Ensure NVM is loaded
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-    if command -v node &> /dev/null && node --version 2>/dev/null | grep -q "^v22"; then
-        print_skip "Node.js 22"
+    if command -v node &> /dev/null && node --version 2>/dev/null | grep -q "^v24"; then
+        print_skip "Node.js 24"
         return 0
     fi
 
-    nvm install 22
-    nvm use 22
-    nvm alias default 22
+    nvm install 24
+    nvm use 24
+    nvm alias default 24
 
-    print_success "Node.js 22 installed successfully"
+    print_success "Node.js 24 installed successfully"
     print_info "Node version: $(node --version)"
 }
 
 check_nodejs() {
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    command -v node &> /dev/null && node --version 2>/dev/null | grep -q "^v22"
+    command -v node &> /dev/null && node --version 2>/dev/null | grep -q "^v24"
 }
 
 install_bun() {
@@ -402,14 +402,14 @@ install_neovim() {
     fi
 
     # Install latest Neovim from GitHub releases
-    local nvim_url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz"
+    local nvim_url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
     local install_dir="/opt/nvim"
 
     curl -LO "$nvim_url"
     sudo rm -rf "$install_dir"
     sudo mkdir -p "$install_dir"
-    sudo tar -C "$install_dir" -xzf nvim-linux64.tar.gz --strip-components=1
-    rm nvim-linux64.tar.gz
+    sudo tar -C "$install_dir" -xzf nvim-linux-x86_64.tar.gz --strip-components=1
+    rm nvim-linux-x86_64.tar.gz
 
     # Create symlink
     sudo ln -sf "$install_dir/bin/nvim" /usr/local/bin/nvim
