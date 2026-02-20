@@ -766,6 +766,7 @@ install_git_config() {
       git config --global delta.light false
       git config --global merge.conflictstyle diff3
       git config --global diff.colorMoved default
+      git config --global core.editor "nvim"
       print_success "Git configured with delta"
     fi
   else
