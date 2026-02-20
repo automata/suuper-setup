@@ -1,19 +1,48 @@
 # Suuper Setup
 
-Setup a Linux box with all AI coding tools and a beautiful development environment.
+Setup a Linux box (tested on Ubuntu 24.04) with AI coding tools and a development environment.
+
+The `install.sh` script expects the existence of a user with sudo privilege and no password required for turning into
+super user, using user named `suuper` as default.
+The `setup.sh` script creates a user (named `suuper` by default) with sudo privilege if none exists yet.
+
+Both scripts are idempotent, so they are safe to re-run.
+They will skip already-installed packages and only install what's missing.
 
 ## Install
 
+In a Ubuntu 24.04 box run, as a user in sudoers (with no password required for sudo):
+
 ```bash
-curl -fsSL http://suuper.space:5000/suuper-setup/post_install.sh | bash
+curl -fsSL https://suuper.space/install | bash
 ```
 
-## Scripts
+Confirm you want to proceed. That will take a few minutes and in the end it will check if all packages and tools
+were installed with success.
 
-- `setup.sh` - For initial Linux box setup
-- `post_install.sh` - For installing development tools on a running Linux box
+### Installing on Suuper Server
+
+```
+1. User creates an account in suuper.dev and receives a server IP
+2. If user has no SSH key, create one with in its local machine with: ssh-keygen -t ed25519 -C "your_email@example.com"
+3. ssh root@<server ip> 'mkdir -p /home/suuper/.ssh && cat >> /home/suuper/.ssh/authorized_keys' < ~/.ssh/id_ed25519.pub
+4. ssh suuper@<server ip>
+5. curl -fsSL https://suuper.space/install | bash 
+```
+
+## Post-Installation
+
+After running the install script:
+
+1. **Restart your shell** or run `source ~/.bashrc`
+2. **Install tmux plugins:** Start tmux, then press `Ctrl+a I`
+3. **Initialize LazyVim:** Run `nvim` and wait for plugins to install
+4. **Configure AI tools:** Set up API keys for Claude, Codex, Gemini, Pi as needed
 
 ## Packages
+
+Please check the `install.sh` script for what packages and tool will be installed, but in summary those are the ones
+you'll find available after installation ends:
 
 ### System & CLI Tools
 
@@ -97,6 +126,10 @@ The setup configures tmux and neovim to work seamlessly together.
 
 After installation, press `Ctrl+a I` to install plugins.
 
+### Neovim
+
+- More at https://lazyvim-ambitious-devs.phillips.codes/course 
+
 ### Neovim/LazyVim Tmux Plugins
 
 **vim-tmux-navigator:**
@@ -108,15 +141,6 @@ After installation, press `Ctrl+a I` to install plugins.
 - Clipboard synchronization between tmux and nvim
 - Pane resizing utilities
 
-## Post-Installation
-
-After running the install script:
-
-1. **Restart your shell** or run `source ~/.bashrc`
-2. **Install tmux plugins:** Start tmux, then press `Ctrl+a I`
-3. **Initialize LazyVim:** Run `nvim` and wait for plugins to install
-4. **Configure AI tools:** Set up API keys for Claude, Codex, Gemini, Pi as needed
-
 ## Requirements
 
 - Linux system (Debian/Ubuntu-based)
@@ -127,6 +151,3 @@ To enable passwordless sudo:
 echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER
 ```
 
-## Idempotent
-
-The script is safe to re-run. It will skip already-installed packages and only install what's missing.

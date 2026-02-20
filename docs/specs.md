@@ -12,16 +12,13 @@ Requirements for both scripts:
 - It should be pretty easy to extend the script to install new packages and config files (eg adding a new function)
 - Run a post operation to check if everything was installed as expected
 
-# install.sh
+# setup.sh
 
 Requirements:
 - The user running the script should be root. If not, fail
 - Before anything, create a user called `suuper` (default name, allow changing it as `--user` param) and make it part of sudoers and configure it to do not require password for sudo
 
-What to install:
-- Read the `setup.sh` and install whatever we installed there
-
-# post_install.sh
+# install.sh
 
 Requirements:
 - The user running the script should be part of sudoers and do not require password to run commands with sudo
