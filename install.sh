@@ -66,6 +66,7 @@ APT_PACKAGES=(
   ripgrep fd-find fzf jq gh git-lfs rsync lsof dnsutils
   netcat-openbsd strace htop tree ncdu httpie entr mtr pv
   cmatrix bat lsd eza btop git-delta unzip git nginx
+  silversearcher-ag
 )
 
 # =============================================================================
