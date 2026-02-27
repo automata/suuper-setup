@@ -14,7 +14,7 @@ They will skip already-installed packages and only install what's missing.
 In a Ubuntu 24.04 box run, as a user in sudoers (with no password required for sudo):
 
 ```bash
-curl -fsSL https://suuper.space/install | bash
+curl -fsSL https://suuper.dev/install | bash
 ```
 
 Confirm you want to proceed. That will take a few minutes and in the end it will check if all packages and tools
@@ -27,7 +27,7 @@ were installed with success.
 2. If user has no SSH key, create one with in its local machine with: ssh-keygen -t ed25519 -C "your_email@example.com"
 3. ssh root@<server ip> 'mkdir -p /home/suuper/.ssh && cat >> /home/suuper/.ssh/authorized_keys' < ~/.ssh/id_ed25519.pub
 4. ssh suuper@<server ip>
-5. curl -fsSL https://suuper.space/install | bash 
+5. curl -fsSL https://suuper.dev/install | bash 
 ```
 
 ## Post-Installation
