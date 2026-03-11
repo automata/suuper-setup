@@ -20,7 +20,8 @@ declare -A PACKAGE_DESCRIPTIONS=(
   ["gum"]="Gum - A tool for glamorous shell scripts"
   ["mosh"]="Mosh - Mobile shell for remote connections"
   ["nvm"]="NVM - Node Version Manager"
-  ["nodejs"]="Node.js 22 - JavaScript runtime"
+  ["nodejs"]="Node.js 24 - JavaScript runtime"
+  ["pnpm"]="pnpm - Fast, disk space efficient package manager"
   ["bun"]="Bun - Fast JavaScript runtime and toolkit"
   ["rust"]="Rust - Systems programming language"
   ["python_uv"]="Python3 and uv - Python with fast package manager"
@@ -44,6 +45,7 @@ PACKAGES=(
   "mosh"
   "nvm"
   "nodejs"
+  "pnpm"
   "bun"
   "rust"
   "python_uv"
@@ -313,6 +315,33 @@ check_nodejs() {
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   command -v node &>/dev/null && node --version 2>/dev/null | grep -q "^v24"
+}
+
+install_pnpm() {
+  print_section "Installing pnpm"
+
+  if command -v pnpm &>/dev/null; then
+    print_skip "pnpm"
+    return 0
+  fi
+
+  # Ensure npm is available
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+  if ! command -v npm &>/dev/null; then
+    print_error "npm not found. Please install Node.js first"
+    return 1
+  fi
+
+  npm install -g pnpm
+
+  print_success "pnpm installed successfully"
+  print_info "pnpm version: $(pnpm --version 2>/dev/null || echo 'reload shell to use')"
+}
+
+check_pnpm() {
+  command -v pnpm &>/dev/null
 }
 
 install_bun() {
@@ -991,6 +1020,13 @@ setup_shell_config() {
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
+
+# Useful aliases
+alias cc='claude --dangerously-skip-permissions'
+alias v='nvim'
+alias vi='nvim'
+alias vim='nvim'
+alias ls='lsd'
 
 # NVM Configuration
 export NVM_DIR="$HOME/.nvm"
