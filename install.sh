@@ -1028,6 +1028,8 @@ alias vi='nvim'
 alias vim='nvim'
 alias ls='lsd'
 
+export TERM=xterm-256color
+
 # NVM Configuration
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
