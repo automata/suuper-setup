@@ -997,6 +997,28 @@ verify_installations() {
 }
 
 # =============================================================================
+# BTOP CONFIGURATION
+# =============================================================================
+
+setup_btop_config() {
+  print_section "Setting up btop Configuration"
+
+  local btop_dir="$HOME/.config/btop"
+  local btop_conf="$btop_dir/btop.conf"
+
+  mkdir -p "$btop_dir"
+  touch "$btop_conf"
+
+  if grep -q '^theme_background=' "$btop_conf" 2>/dev/null; then
+    sed -i 's/^theme_background=.*/theme_background=False/' "$btop_conf"
+    print_success "btop theme_background set to False"
+  else
+    printf '\ntheme_background=False\n' >>"$btop_conf"
+    print_success "btop configuration updated"
+  fi
+}
+
+# =============================================================================
 # SHELL CONFIGURATION
 # =============================================================================
 
@@ -1075,6 +1097,9 @@ main() {
       print_warning "Install function not found for $pkg"
     fi
   done
+
+  # Setup btop configuration
+  setup_btop_config
 
   # Setup shell configuration
   setup_shell_config
