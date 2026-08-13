@@ -1,3 +1,5 @@
+
+
 # Suuper Setup
 
 Setup a Linux box (tested on Ubuntu 24.04) with AI coding tools and a development environment.
@@ -24,7 +26,7 @@ were installed with success.
 
 ```
 1. User creates an account in suuper.dev and receives a server IP
-2. If user has no SSH key, create one with in its local machine with: ssh-keygen -t ed25519 -C "your_email@example.com"
+2. If you have no SSH key, create one on your local machine with: ssh-keygen -t ed25519 -C "your_email@example.com"
 3. ssh root@<server ip> 'mkdir -p /home/suuper/.ssh && cat >> /home/suuper/.ssh/authorized_keys' < ~/.ssh/id_ed25519.pub
 4. ssh suuper@<server ip>
 5. curl -fsSL https://raw.githubusercontent.com/automata/suuper-setup/refs/heads/main/install.sh | bash 
